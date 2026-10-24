@@ -1,36 +1,133 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Think First — AI Tutor
 
-## Getting Started
+An AI tutor for Grade 8–12 students that **never just gives the answer**. It explains one concept at a time, requires the student to explain it back in their own words, and only unlocks the next step when they demonstrate understanding.
 
-First, run the development server:
+Built with Next.js (App Router) + TypeScript + Tailwind, powered by IBM Consulting Advantage (ICA) API.
 
+---
+
+## Setup
+
+**1. Clone and install**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd iot
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**2. Create `.env.local`**
+```bash
+cp .env.example .env.local
+```
+Edit `.env.local` and fill in:
+```
+ICA_API_KEY=your_ica_developer_api_key_here
+ICA_MODEL=gpt-5.1
+ICA_COLLECTION_ID=          # optional — leave blank for now
+```
+Get your API key from: ICA UI → Settings → API Keys → ICA APIs.
+The key is only ever read server-side. **Never commit it.**
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**3. Run the ICA health check**
+```bash
+npm run ica-check
+```
+This prints available model IDs, tests a chat call, and checks JSON compliance.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+**4. Start the dev server**
+```bash
+npm run dev
+```
+Open [http://localhost:3000](http://localhost:3000).
 
-## Learn More
+Teacher dashboard: [http://localhost:3000/teacher](http://localhost:3000/teacher)
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## What works today
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Feature | Status |
+|---|---|
+| Full lesson flow (probe → explain → teach-back → validate → next step) | ✅ Works |
+| Teach-back modal — submit blocked under 15 words | ✅ Works |
+| Copied-text detection (4-gram overlap > 0.5) | ✅ Works |
+| Answer leak guard — retries if AI reveals x=2/x=3 | ✅ Works |
+| "Just give me the answer" → friendly redirect (no model call) | ✅ Works |
+| Hint ladder — 3 levels | ✅ Works |
+| Step progress bar (✅🟡❌) | ✅ Works |
+| Token meter — running total from API usage | ✅ Works |
+| Sources chip — shown when ICA returns sources | ✅ Works |
+| `/api/health` — returns model list | ✅ Works |
+| Teacher dashboard | ✅ Works (MOCK DATA) |
 
-## Deploy on Vercel
+## Concept / mocked
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+| Feature | Notes |
+|---|---|
+| Teacher dashboard data | Hard-coded mock numbers — no DB |
+| Progress persistence | Browser state only; refreshing resets the session |
+| School SSO / login | Not implemented |
+| Document collection grounding | `ICA_COLLECTION_ID` stub present; upload script in `scripts/ica-upload.ts` |
+| Assistance levels (Guided / Balanced / Independent) | Spec written, not wired into UI |
+| Scenario 5, 6, 7 (partial/wrong/2-fail) | Tested via real model calls in `scripts/check-validator.ts` |
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Known limitations
+
+- The unlock decision (`unlocked: true`) is returned by the server but trusted by the client. In a real deployment, step state should be stored server-side.
+- `ICA_MODEL` is read at startup. If the model is unavailable, the server returns a clear error.
+- The teacher dashboard shows class-level aggregates only; no individual student text is ever stored.
+
+---
+
+## Scripts
+
+| Command | What it does |
+|---|---|
+| `npm run ica-check` | Health check — lists models, tests chat, tests JSON compliance |
+| `npx tsx scripts/check-scenarios.ts` | Runs SPEC §11 scenarios 1–4, 8, 9 |
+| `npx tsx scripts/check-validator.ts` | Shows real model output for correct/partial teach-back on step 3 |
+| `npx tsx scripts/validate-lesson.ts` | Validates `lessons/quadratics.json` against TypeScript types |
+
+---
+
+## File structure
+
+```
+app/                        # Next.js App Router pages
+  page.tsx                  # Lesson screen
+  teacher/page.tsx          # MOCK teacher dashboard
+  api/
+    health/route.ts         # GET /api/health
+    tutor/route.ts          # POST /api/tutor
+    validate/route.ts       # POST /api/validate
+components/
+  TutorPanel.tsx            # Conversation UI
+  TeachBackModal.tsx        # Teach-back popup
+  StepProgress.tsx          # Step progress pills
+  TokenMeter.tsx            # Token budget bar
+  SourcesChip.tsx           # Source attribution chips
+lib/
+  ica.ts                    # ICA API client
+  types.ts                  # TypeScript types
+  lesson.ts                 # Lesson loader + validator
+  prompts.ts                # System prompts + context builder
+  guards.ts                 # wordCount, overlapRatio, leaksAnswer, parseJsonStrict
+lessons/
+  quadratics.json           # Grade 9 quadratics lesson (4 steps)
+data/
+  mockTeacher.ts            # MOCK teacher dashboard data
+scripts/
+  ica-check.ts              # ICA health check
+  check-scenarios.ts        # SPEC §11 scenario tests
+  check-validator.ts        # Validator model output test
+  validate-lesson.ts        # Lesson JSON validation
+  ica-upload.ts             # (stub) Document collection upload
+```
+
+---
+
+## API key security
+
+- `ICA_API_KEY` lives only in `.env.local` (server-side)
+- `.env*` is in `.gitignore` (except `.env.example`)
+- The browser never calls ICA directly — all calls go through Next.js API routes
+- The key is never logged

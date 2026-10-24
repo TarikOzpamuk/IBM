@@ -1,0 +1,63 @@
+{
+  "id": "quadratics-factoring",
+  "subject": "Maths",
+  "grade": 9,
+  "topic": "Solving quadratic equations by factoring",
+  "homeworkProblem": {
+    "text": "x² − 5x + 6 = 0",
+    "forbiddenAnswerPatterns": [
+      "x = 2",
+      "x = 3",
+      "x=2",
+      "x=3",
+      "(x - 2)(x - 3)",
+      "(x-2)(x-3)",
+      "x=2andx=3",
+      "solutionsare2and3"
+    ]
+  },
+  "steps": [
+    {
+      "id": 1,
+      "concept": "What a quadratic equation is and what 'solving' means",
+      "rubric": [
+        "x is an unknown number",
+        "solving means finding the x values that make the equation true",
+        "a quadratic can have two solutions"
+      ],
+      "miniExample": "In x² = 9, both x = 3 and x = −3 make it true.",
+      "similarProblem": "x² − 4 = 0"
+    },
+    {
+      "id": 2,
+      "concept": "Zero-product rule: if A × B = 0 then A = 0 or B = 0",
+      "rubric": [
+        "if a product equals zero, at least one factor is zero",
+        "this only works when the other side is exactly zero"
+      ],
+      "miniExample": "(x − 1)(x − 4) = 0 means x − 1 = 0 or x − 4 = 0.",
+      "similarProblem": "(x + 2)(x − 7) = 0"
+    },
+    {
+      "id": 3,
+      "concept": "Factoring x² + bx + c into (x + p)(x + q)",
+      "rubric": [
+        "find two numbers p and q that multiply to c",
+        "the same two numbers add up to b",
+        "write the expression as (x + p)(x + q)"
+      ],
+      "miniExample": "x² + 3x + 2: numbers 1 and 2 multiply to 2 and add to 3, so (x + 1)(x + 2).",
+      "similarProblem": "x² + 7x + 12"
+    },
+    {
+      "id": 4,
+      "concept": "Putting it together and checking the answer",
+      "rubric": [
+        "factor, then apply the zero-product rule to get the solutions",
+        "check each solution by putting it back into the original equation"
+      ],
+      "miniExample": "x² + 3x + 2 = 0 → (x+1)(x+2) = 0 → x = −1 or x = −2; check x = −1: 1 − 3 + 2 = 0.",
+      "similarProblem": "x² + 5x + 4 = 0"
+    }
+  ]
+}
